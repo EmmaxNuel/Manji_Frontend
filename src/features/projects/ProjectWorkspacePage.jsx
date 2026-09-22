@@ -12,11 +12,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import {
   LayoutDashboard, BookOpen, Users, Film, Clapperboard, AudioLines,
-  Boxes, Sparkles, Pencil, Settings, Trash2, ArrowLeft,
+  Boxes, Sparkles, Pencil, Settings, Trash2, ArrowLeft, Video, Link2, Search, X, Plus,
 } from 'lucide-react'
 import MainLayout from '../../layouts/MainLayout'
 import { Spinner, Badge } from '../../components/ui'
-import ManjiGuide from '../../components/manji/ManjiGuide'
 import { useContextualTour } from '../tour/TourContext'
 import { projectsService, artStyleLabel, projectTypeLabel } from './projectsService'
 import StorySection from './StorySection'
@@ -25,6 +24,8 @@ import CharactersSection from '../characters/CharactersSection'
 import ManjiAiSection from '../ai/ManjiAiSection'
 import AssetsSection from '../assets/AssetsSection'
 import StoryboardSection from '../storyboard/StoryboardSection'
+import AnimationSection from '../animation/AnimationSection'
+import AudioSection from '../audio/AudioSection'
 
 const SECTIONS = [
   { key: 'overview',    label: 'Overview',   Icon: LayoutDashboard },
@@ -32,13 +33,11 @@ const SECTIONS = [
   { key: 'characters',  label: 'Characters', Icon: Users },
   { key: 'scenes',      label: 'Scenes',     Icon: Film },
   { key: 'storyboard',  label: 'Storyboard', Icon: Clapperboard },
-  { key: 'animation',   label: 'Animation',  Icon: Boxes },
+  { key: 'animation',  label: 'Animation',  Icon: Video },
   { key: 'audio',       label: 'Audio',      Icon: AudioLines },
   { key: 'assets',      label: 'Assets',     Icon: Boxes },
   { key: 'manji-ai',    label: 'Manji AI',   Icon: Sparkles },
 ]
-
-const COMING_SOON = ['animation', 'audio']
 
 export default function ProjectWorkspacePage() {
   const { id } = useParams()
@@ -46,6 +45,10 @@ export default function ProjectWorkspacePage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [section, setSection] = useState('overview')
+  const [showStoryPicker, setShowStoryPicker] = useState(false)
+  const [storySearch, setStorySearch] = useState('')
+  const [availableStories, setAvailableStories] = useState([])
+  const [loadingStories, setLoadingStories] = useState(false)
 
   // One-time contextual tour of the studio shell.
   useContextualTour('project_workspace', { enabled: !loading && Boolean(project) })
@@ -78,6 +81,57 @@ export default function ProjectWorkspacePage() {
       navigate('/projects')
     } catch {
       toast.error('Failed to delete project.')
+    }
+  }
+
+  async function openStoryPicker() {
+    setShowStoryPicker(true)
+    setStorySearch('')
+    setLoadingStories(true)
+    try {
+      const res = await projectsService.getStoriesForLinking(id)
+      setAvailableStories(res.data || [])
+    } catch {
+      toast.error('Failed to load stories.')
+    } finally {
+      setLoadingStories(false)
+    }
+  }
+
+  async function searchStories() {
+    setLoadingStories(true)
+    try {
+      const res = await projectsService.getStoriesForLinking(id, storySearch)
+      setAvailableStories(res.data || [])
+    } catch {
+      toast.error('Failed to search stories.')
+    } finally {
+      setLoadingStories(false)
+    }
+  }
+
+  async function handleLinkStory(story) {
+    try {
+      await projectsService.linkStory(id, story.id)
+      toast.success(`Linked "${story.title}" to project.`)
+      setShowStoryPicker(false)
+      // Refresh project to show linked story
+      const res = await projectsService.getProject(id)
+      setProject(res.data)
+    } catch (err) {
+      toast.error(err?.response?.data?.error?.message || 'Failed to link story.')
+    }
+  }
+
+  async function handleUnlinkStory() {
+    if (!window.confirm('Unlink the story from this project? The story itself will not be deleted.')) return
+    try {
+      await projectsService.unlinkStory(id)
+      toast.success('Story unlinked from project.')
+      const res = await projectsService.getProject(id)
+      setProject(res.data)
+    } catch {
+      toast.error('Failed to unlink story.')
     }
   }
 
@@ -176,17 +230,25 @@ export default function ProjectWorkspacePage() {
                   {project.story ? (
                     <>
                       <div className="text-white font-medium">{project.story.title}</div>
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         <Link to={`/create/${project.story.slug}/edit`} className="text-orange-400 text-xs hover:underline">
                           Edit story
                         </Link>
                         <Link to={`/create/${project.story.slug}/chapters`} className="text-orange-400 text-xs hover:underline">
                           Manage chapters
                         </Link>
+                        <button onClick={handleUnlinkStory} className="text-red-400 text-xs hover:underline">
+                          Unlink story
+                        </button>
                       </div>
                     </>
                   ) : (
-                    <div className="text-white/50 text-sm">No story linked yet. Story writing arrives in Phase 2.</div>
+                    <div className="flex flex-col gap-2">
+                      <div className="text-white/50 text-sm">No story linked yet.</div>
+                      <button onClick={openStoryPicker} className="btn-primary text-sm justify-center" data-tour="link-story">
+                        <Link2 size={14} className="mr-1.5" /> Link Existing Story
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -195,7 +257,9 @@ export default function ProjectWorkspacePage() {
 
           {section === 'story' && <StorySection project={project} />}
 
-          {section === 'scenes' && <ScenesSection project={project} />}
+          {section === 'scenes' && (
+            <ScenesSection project={project} onOpenStoryboard={() => setSection('storyboard')} />
+          )}
 
           {section === 'characters' && <CharactersSection project={project} />}
 
@@ -205,21 +269,9 @@ export default function ProjectWorkspacePage() {
 
           {section === 'storyboard' && <StoryboardSection project={project} />}
 
-          {COMING_SOON.includes(section) && (
-            <div className="py-10">
-              <ManjiGuide
-                expression="thinking"
-                size="lg"
-                animated="nod"
-                title={SECTIONS.find((s) => s.key === section)?.label}
-                body="This section is coming in a later phase of Manji Studio."
-              >
-                <button onClick={() => setSection('overview')} className="btn-secondary text-sm">
-                  Back to overview
-                </button>
-              </ManjiGuide>
-            </div>
-          )}
+          {section === 'animation' && <AnimationSection project={project} />}
+
+          {section === 'audio' && <AudioSection project={project} />}
         </div>
       </div>
     </MainLayout>

@@ -43,16 +43,16 @@ function SectionHeader({ icon: Icon, title, subtitle, linkTo, linkLabel = 'View 
   return (
     <div className="flex items-end justify-between mb-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-400">
+        <div className="p-2 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)', color: 'var(--color-primary)' }}>
           <Icon size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">{title}</h2>
-          {subtitle && <p className="text-white/40 text-sm">{subtitle}</p>}
+          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{title}</h2>
+          {subtitle && <p className="text-sm text-secondary">{subtitle}</p>}
         </div>
       </div>
       {linkTo && (
-        <Link to={linkTo} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+        <Link to={linkTo} className="text-sm font-medium flex items-center gap-1 transition-colors" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
           {linkLabel} <ChevronRight size={16} />
         </Link>
       )}
@@ -74,8 +74,8 @@ function StoryGrid({ stories, loading, emptyMessage = 'No stories found.' }) {
 
   if (!stories.length) {
     return (
-      <div className="text-center py-16 glass-dark rounded-2xl border border-white/5">
-        <p className="text-white/40 text-sm">{emptyMessage}</p>
+      <div className="text-center py-16" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '1.5rem' }}>
+        <p className="text-sm text-secondary">{emptyMessage}</p>
       </div>
     )
   }
@@ -95,18 +95,56 @@ function StoryGrid({ stories, loading, emptyMessage = 'No stories found.' }) {
 function FilterBar({ contentType, onContentTypeChange, genres, selectedGenre, onGenreChange, searchQuery, onSearchChange, onClearFilters }) {
   const hasFilters = contentType || selectedGenre || searchQuery
 
+  const filterContainerStyle = {
+    background: 'var(--color-card)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '1.5rem',
+    padding: '1rem',
+  }
+  const inputStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.5rem',
+    padding: '0.625rem 1rem 0.625rem 2.5rem',
+    color: 'var(--color-text)',
+    width: '100%',
+    fontSize: '0.875rem',
+  }
+  const selectStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.5rem',
+    padding: '0.625rem 1rem',
+    color: 'var(--color-text)',
+    fontSize: '0.875rem',
+  }
+  const clearBtnStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.5rem',
+    padding: '0.625rem 1rem',
+    color: 'var(--color-text-secondary)',
+    fontSize: '0.875rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.375rem',
+    transition: 'all 0.2s',
+  }
+  const iconColor = { color: 'var(--color-text-muted)' }
+  const placeholderColor = { color: 'var(--color-input-placeholder)' }
+
   return (
-    <div className="glass-dark rounded-2xl border border-white/10 p-4 mb-8">
+    <div style={filterContainerStyle}>
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Search */}
         <div className="flex-1 relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+          <Search size={18} style={{ ...iconColor, position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search stories, authors, tags..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+            style={{ ...inputStyle, placeholderColor }}
           />
         </div>
 
@@ -114,7 +152,7 @@ function FilterBar({ contentType, onContentTypeChange, genres, selectedGenre, on
         <select
           value={contentType}
           onChange={(e) => onContentTypeChange(e.target.value)}
-          className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+          style={selectStyle}
         >
           {CONTENT_TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -125,7 +163,7 @@ function FilterBar({ contentType, onContentTypeChange, genres, selectedGenre, on
         <select
           value={selectedGenre}
           onChange={(e) => onGenreChange(e.target.value)}
-          className="px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+          style={selectStyle}
         >
           <option value="">All Genres</option>
           {genres.map((g) => (
@@ -137,7 +175,15 @@ function FilterBar({ contentType, onContentTypeChange, genres, selectedGenre, on
         {hasFilters && (
           <button
             onClick={onClearFilters}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-colors text-sm"
+            style={clearBtnStyle}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--color-text)'
+              e.currentTarget.style.background = 'var(--color-bg-tertiary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--color-text-secondary)'
+              e.currentTarget.style.background = 'var(--color-input-bg)'
+            }}
           >
             <X size={16} /> Clear
           </button>
@@ -277,8 +323,8 @@ export default function DiscoverPage() {
       <div className="page-container py-10">
         {/* Page header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Discover</h1>
-          <p className="text-white/50">Explore stories from creators worldwide</p>
+          <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>Discover</h1>
+          <p className="text-secondary">Explore stories from creators worldwide</p>
         </div>
 
         {/* Filters */}

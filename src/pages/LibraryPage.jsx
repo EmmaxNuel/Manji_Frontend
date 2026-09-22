@@ -69,11 +69,26 @@ export default function LibraryPage() {
 
   const activeTabInfo = TABS.find((t) => t.key === activeTab)
 
+  const tabActiveStyle = {
+    background: 'color-mix(in srgb, var(--color-primary) 20%, transparent)',
+    color: 'var(--color-primary)',
+    borderColor: 'color-mix(in srgb, var(--color-primary) 30%, transparent)',
+  }
+  const tabInactiveStyle = {
+    background: 'var(--color-input-bg)',
+    color: 'var(--color-text-secondary)',
+    borderColor: 'var(--color-border)',
+  }
+  const tabInactiveHover = {
+    color: 'var(--color-text)',
+    background: 'var(--color-bg-tertiary)',
+  }
+
   return (
     <MainLayout>
       <div className="page-container py-10">
-        <h1 className="text-3xl font-bold text-white mb-2">My Library</h1>
-        <p className="text-white/50 mb-8">Your reading list, bookmarks, and history.</p>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text)' }}>My Library</h1>
+        <p className="text-secondary mb-8">Your reading list, bookmarks, and history.</p>
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -83,11 +98,20 @@ export default function LibraryPage() {
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                    : 'bg-white/5 text-white/60 border border-white/5 hover:text-white hover:bg-white/10'
-                }`}
+                style={isActive ? tabActiveStyle : tabInactiveStyle}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = 'var(--color-text)'
+                    e.currentTarget.style.background = 'var(--color-bg-tertiary)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = 'var(--color-text-secondary)'
+                    e.currentTarget.style.background = 'var(--color-input-bg)'
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 border"
               >
                 <Icon size={16} />
                 {label}
@@ -102,12 +126,12 @@ export default function LibraryPage() {
             <Spinner size="lg" />
           </div>
         ) : stories.length === 0 ? (
-          <div className="text-center py-20 glass-dark rounded-2xl border border-white/5">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
-              {activeTabInfo && <activeTabInfo.icon size={28} className="text-white/20" />}
+          <div className="text-center py-20" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '1rem' }}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center" style={{ background: 'var(--color-input-bg)' }}>
+              {activeTabInfo && <activeTabInfo.icon size={28} style={{ color: 'var(--color-text-muted)' }} />}
             </div>
-            <h3 className="text-white font-semibold mb-2">No stories here yet</h3>
-            <p className="text-white/40 text-sm mb-6">
+            <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>No stories here yet</h3>
+            <p className="text-sm text-secondary mb-6">
               {activeTab === 'reading' && 'Start reading a story and it will appear here.'}
               {activeTab === 'bookmarks' && 'Bookmark stories you want to save for later.'}
               {activeTab === 'following' && 'Follow stories to get notified of new chapters.'}

@@ -8,7 +8,9 @@
 
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const configuredBaseUrl = import.meta.env.VITE_API_URL || ''
+const desktopBaseUrl = typeof window !== 'undefined' && window.electronAPI?.apiBaseUrl
+const BASE_URL = (desktopBaseUrl || configuredBaseUrl || '/api').replace(/\/$/, '')
 
 const api = axios.create({
   baseURL: BASE_URL,

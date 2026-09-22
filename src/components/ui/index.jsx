@@ -106,7 +106,7 @@ export function PasswordInput({ label, error, id, ...props }) {
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           aria-label={visible ? 'Hide password' : 'Show password'}
         >
           {visible ? (

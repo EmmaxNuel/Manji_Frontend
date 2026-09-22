@@ -62,6 +62,16 @@ export const projectsService = {
     const { data } = await api.post(`/projects/${projectId}/story/unlink/`)
     return data
   },
+
+  // ---------------------------------------------------------------------------
+  // Story picker for linking existing stories
+  // ---------------------------------------------------------------------------
+  async getStoriesForLinking(projectId, search = '') {
+    const { data } = await api.get(`/projects/${projectId}/story/picker/`, {
+      params: search ? { search } : {},
+    })
+    return data
+  },
 }
 
 // ---------------------------------------------------------------------------

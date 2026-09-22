@@ -1,0 +1,27 @@
+{
+  "version": "0.1.0",
+  "releaseDate": "2026-09-22",
+  "installerSizeBytes": 74937904,
+  "portableSizeBytes": 74772460,
+  "supportedWindows": "Windows 10 version 1903 or later (64-bit)",
+  "downloadUrl": "/downloads/MANJI-Setup-0.1.0.exe",
+  "portableDownloadUrl": "/downloads/MANJI-0.1.0.exe",
+  "requirements": [
+    "64-bit Windows 10 version 1903 or later",
+    "4 GB RAM minimum; 8 GB recommended",
+    "DirectX 11 compatible graphics",
+    "Stable internet connection for accounts, cloud projects, and AI features"
+  ],
+  "changelog": [
+    "Initial MANJI Studio Windows release",
+    "Project workspace with story, characters, scenes, storyboard, assets, audio, animation, and MANJI AI",
+    "Official MANJI story and animation browsing",
+    "Windows portable and installer builds"
+  ],
+  "installation": [
+    "Download MANJI-Setup-0.1.0.exe",
+    "Run the installer and follow the Windows prompts",
+    "Open MANJI Studio from the Start Menu",
+    "Sign in with your MANJI account or create one"
+  ]
+}

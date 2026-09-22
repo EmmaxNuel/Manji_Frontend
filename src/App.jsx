@@ -20,6 +20,8 @@ import DiscoverPage from './pages/DiscoverPage'
 import LibraryPage from './pages/LibraryPage'
 import StoryDetailPage from './pages/stories/StoryDetailPage'
 import ChapterReaderPage from './pages/reader/ChapterReaderPage'
+import OfficialPage from './pages/OfficialPage'
+import DownloadPage from './pages/DownloadPage'
 import { NotFoundPage } from './pages/placeholders'
 
 // Creator pages
@@ -62,7 +64,9 @@ export default function App() {
 
             {/* Open routes */}
             <Route path="/" element={<HomePage />} />
+            <Route path="/download" element={<DownloadPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/official" element={<OfficialPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/stories/:slug" element={<StoryDetailPage />} />
             <Route path="/chapters/:id" element={<ChapterReaderPage />} />

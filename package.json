@@ -3,34 +3,73 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+    "desktop": "electron .",
+    "desktop:dev": "vite --host 127.0.0.1",
+    "build:desktop": "npm run build && electron-builder --win portable",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives"
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "lucide-react": "^0.441.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
     "react-hot-toast": "^2.4.1",
-    "lucide-react": "^0.441.0"
+    "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
+    "electron": "^31.7.7",
+    "electron-builder": "^25.1.8",
     "eslint": "^9.9.1",
     "eslint-plugin-react": "^7.35.2",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
     "postcss": "^8.4.44",
+    "react-refresh": "^0.14.2",
     "tailwindcss": "^3.4.11",
     "vite": "^5.4.3"
   },
   "allowScripts": {
     "esbuild@0.21.5": true
+  },
+  "build": {
+    "appId": "io.manji.studio",
+    "productName": "Manji Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "npmRebuild": false,
+    "icon": "src/assets/logo.png",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/logo.png"
+    }
   }
 }

@@ -26,14 +26,21 @@ import { AreaChart, ProgressBar } from '../../components/ui/charts'
 // ---------------------------------------------------------------------------
 
 function StatCard({ icon: Icon, label, value, color = 'text-orange-400' }) {
+  const iconBgStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.75rem',
+    padding: '0.75rem',
+    color: color.replace('text-', ''),
+  }
   return (
     <div className="card p-5 flex items-center gap-4">
-      <div className={`p-3 rounded-xl bg-white/5 ${color}`}>
+      <div style={iconBgStyle}>
         <Icon size={22} />
       </div>
       <div>
-        <p className="text-white/50 text-xs font-medium uppercase tracking-wide">{label}</p>
-        <p className="text-white text-2xl font-bold">{value ?? '—'}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-secondary">{label}</p>
+        <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{value ?? '—'}</p>
       </div>
     </div>
   )
@@ -41,18 +48,14 @@ function StatCard({ icon: Icon, label, value, color = 'text-orange-400' }) {
 
 function StatusBadge({ status }) {
   const map = {
-    draft:        { label: 'Draft',     cls: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
-    published:    { label: 'Published', cls: 'bg-green-500/20 text-green-400 border-green-500/30' },
-    completed:    { label: 'Completed', cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-    hiatus:       { label: 'Hiatus',    cls: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-    discontinued: { label: 'Discontinued', cls: 'bg-red-500/20 text-red-400 border-red-500/30' },
+    draft:        { label: 'Draft',     cls: 'badge-default' },
+    published:    { label: 'Published', cls: 'badge-success' },
+    completed:    { label: 'Completed', cls: 'badge-primary' },
+    hiatus:       { label: 'Hiatus',    cls: 'badge-warning' },
+    discontinued: { label: 'Discontinued', cls: 'badge-danger' },
   }
   const s = map[status] || map.draft
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${s.cls}`}>
-      {s.label}
-    </span>
-  )
+  return <Badge variant={s.cls}>{s.label}</Badge>
 }
 
 function formatDayLabels(days = []) {
@@ -69,16 +72,23 @@ function formatDayLabels(days = []) {
 
 function AnalyticsCard({ icon: Icon, label, points, labels, color, accent }) {
   const total = (points || []).reduce((sum, n) => sum + n, 0)
+  const iconBgStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.5rem',
+    padding: '0.5rem',
+    color: accent.replace('text-', ''),
+  }
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg bg-white/5 ${accent}`}>
+          <div style={iconBgStyle}>
             <Icon size={16} />
           </div>
-          <span className="text-white/60 text-sm font-medium">{label}</span>
+          <span className="text-sm font-medium text-secondary">{label}</span>
         </div>
-        <span className="text-white font-bold text-lg">{total.toLocaleString()}</span>
+        <span className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>{total.toLocaleString()}</span>
       </div>
       <AreaChart points={points} labels={labels} color={color} compact />
     </div>
@@ -98,42 +108,42 @@ function StoryPerformanceTable({ stories }) {
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-white font-semibold">Story Performance</h3>
-        <span className="text-white/40 text-xs">{stories.length} stories</span>
+        <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Story Performance</h3>
+        <span className="text-xs text-secondary">{stories.length} stories</span>
       </div>
       <div className="space-y-4">
         {stories.map((story) => (
           <div key={story.id} className="flex items-center gap-4">
-            <div className="w-10 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
+            <div className="w-10 h-14 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--color-input-bg)' }}>
               {story.cover ? (
                 <img src={story.cover} alt={story.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen size={16} className="text-white/30" />
+                  <BookOpen size={16} style={{ color: 'var(--color-text-muted)' }} />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <p className="text-white font-medium text-sm truncate">{story.title}</p>
-                <span className="text-white/50 text-xs whitespace-nowrap">
-                  <Eye size={12} className="inline mr-0.5 -mt-0.5" /> {story.views_count.toLocaleString()}
+                <p className="font-medium text-sm truncate" style={{ color: 'var(--color-text)' }}>{story.title}</p>
+                <span className="text-xs whitespace-nowrap text-secondary">
+                  <Eye size={12} style={{ color: '#ef4444' }} className="inline mr-0.5 -mt-0.5" /> {story.views_count.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-[11px] text-white/40">
+              <div className="flex items-center gap-4 text-[11px] text-secondary">
                 <span className="flex items-center gap-1.5 flex-1">
-                  <Heart size={12} className="text-pink-400" />
+                  <Heart size={12} style={{ color: '#ec4899' }} />
                   <ProgressBar value={maxLikes ? (story.likes_count / maxLikes) * 100 : 0} color="bg-pink-500" className="flex-1" />
                   <span className="w-8 text-right">{story.likes_count}</span>
                 </span>
                 <span className="flex items-center gap-1.5 flex-1">
-                  <Users size={12} className="text-green-400" />
+                  <Users size={12} style={{ color: '#22c55e' }} />
                   <ProgressBar value={maxFollowers ? (story.followers_count / maxFollowers) * 100 : 0} color="bg-green-500" className="flex-1" />
                   <span className="w-8 text-right">{story.followers_count}</span>
                 </span>
               </div>
-              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/40">
-                <Eye size={12} className="text-blue-400" />
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-secondary">
+                <Eye size={12} style={{ color: '#3b82f6' }} />
                 <ProgressBar value={maxViews ? (story.views_count / maxViews) * 100 : 0} color="bg-blue-500" className="flex-1" />
                 <span className="w-8 text-right">{story.views_count.toLocaleString()}</span>
               </div>
@@ -148,21 +158,22 @@ function StoryPerformanceTable({ stories }) {
 // ---------------------------------------------------------------------------
 // Upgrade prompt for readers
 // ---------------------------------------------------------------------------
+
 function UpgradePrompt({ onUpgrade, upgrading }) {
   return (
     <MainLayout>
       <div className="page-container py-24">
         <div className="max-w-lg mx-auto text-center">
-          <div className="glass-dark rounded-2xl p-10 border border-orange-500/20">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-orange-500/20 flex items-center justify-center">
-              <PenSquare size={32} className="text-orange-400" />
+          <div className="rounded-2xl p-10" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderColor: 'color-mix(in srgb, var(--color-primary) 20%, transparent)' }}>
+            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--color-primary) 20%, transparent)' }}>
+              <PenSquare size={32} style={{ color: 'var(--color-primary)' }} />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-3">Become a Creator</h1>
-            <p className="text-white/60 leading-relaxed mb-8">
+            <h1 className="text-2xl font-bold mb-3" style={{ color: 'var(--color-text)' }}>Become a Creator</h1>
+            <p className="text-secondary leading-relaxed mb-8">
               Upgrade your account to unlock Creator Studio and start publishing
               your stories, novels, and manga on Manji.
             </p>
-            <ul className="text-left text-white/70 text-sm space-y-2 mb-8">
+            <ul className="text-left text-sm space-y-2 mb-8" style={{ color: 'var(--color-text-secondary)' }}>
               {[
                 'Create and publish unlimited stories',
                 'Track views, likes, and followers',
@@ -170,7 +181,7 @@ function UpgradePrompt({ onUpgrade, upgrading }) {
                 'Build your reader community',
               ].map((f) => (
                 <li key={f} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--color-primary)' }} />
                   {f}
                 </li>
               ))}
@@ -193,6 +204,7 @@ function UpgradePrompt({ onUpgrade, upgrading }) {
 // ---------------------------------------------------------------------------
 // Story row in the table
 // ---------------------------------------------------------------------------
+
 function StoryRow({ story, onDelete, onStatusChange }) {
   const [deleting, setDeleting] = useState(false)
   const [publishing, setPublishing] = useState(false)
@@ -234,15 +246,41 @@ function StoryRow({ story, onDelete, onStatusChange }) {
     }
   }
 
+  const rowStyle = {
+    background: 'var(--color-input-bg)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0.75rem',
+    padding: '1rem',
+    transition: 'all 0.2s',
+  }
+  const coverStyle = {
+    background: 'var(--color-input-bg)',
+    borderRadius: '0.5rem',
+    width: '3rem',
+    height: '4rem',
+    overflow: 'hidden',
+    flexShrink: 0,
+  }
+  const actionBtnStyle = (bgColor, textColor) => ({
+    background: `color-mix(in srgb, ${bgColor} 10%, transparent)`,
+    color: textColor,
+    borderRadius: '0.5rem',
+    padding: '0.5rem',
+    transition: 'all 0.2s',
+  })
+  const actionBtnHover = (bgColor) => ({
+    background: `color-mix(in srgb, ${bgColor} 20%, transparent)`,
+  })
+
   return (
-    <div className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/8 transition-colors border border-white/5 group">
+    <div style={rowStyle} className="flex items-center gap-4 group" onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-tertiary)'} onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-input-bg)'}>
       {/* Cover thumbnail */}
-      <div className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-white/10">
+      <div style={coverStyle}>
         {story.cover ? (
           <img src={story.cover} alt={story.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <BookOpen size={20} className="text-white/30" />
+            <BookOpen size={20} style={{ color: 'var(--color-text-muted)' }} />
           </div>
         )}
       </div>
@@ -250,14 +288,14 @@ function StoryRow({ story, onDelete, onStatusChange }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-white font-semibold truncate">{story.title}</p>
+          <p className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>{story.title}</p>
           <StatusBadge status={story.status} />
         </div>
-        <div className="flex items-center gap-4 mt-1 text-white/40 text-xs">
+        <div className="flex items-center gap-4 mt-1 text-xs text-secondary">
           <span className="capitalize">{story.content_type?.replace('_', ' ')}</span>
-          <span className="flex items-center gap-1"><Eye size={12} /> {story.views_count}</span>
-          <span className="flex items-center gap-1"><Heart size={12} /> {story.likes_count}</span>
-          <span className="flex items-center gap-1"><BookOpen size={12} /> {story.chapters_count} ch</span>
+          <span className="flex items-center gap-1"><Eye size={12} style={{ color: '#ef4444' }} /> {story.views_count}</span>
+          <span className="flex items-center gap-1"><Heart size={12} style={{ color: '#ec4899' }} /> {story.likes_count}</span>
+          <span className="flex items-center gap-1"><BookOpen size={12} style={{ color: '#3b82f6' }} /> {story.chapters_count} ch</span>
         </div>
       </div>
 
@@ -266,25 +304,33 @@ function StoryRow({ story, onDelete, onStatusChange }) {
         <button
           onClick={handleTogglePublish}
           disabled={publishing}
-          className={`p-2 rounded-lg transition-colors ${
-            isPublished
-              ? 'bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20'
-              : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-          }`}
+          style={isPublished ? actionBtnStyle('#f59e0b', '#f59e0b') : actionBtnStyle('#22c55e', '#22c55e')}
+          onMouseEnter={(e) => {
+            if (isPublished) e.currentTarget.style.background = 'color-mix(in srgb, #f59e0b 20%, transparent)'
+            else e.currentTarget.style.background = 'color-mix(in srgb, #22c55e 20%, transparent)'
+          }}
+          onMouseLeave={(e) => {
+            if (isPublished) e.currentTarget.style.background = 'color-mix(in srgb, #f59e0b 10%, transparent)'
+            else e.currentTarget.style.background = 'color-mix(in srgb, #22c55e 10%, transparent)'
+          }}
           title={isPublished ? 'Unpublish story' : 'Publish story'}
         >
           {publishing ? <Spinner size="sm" /> : isPublished ? <RotateCcw size={16} /> : <Send size={16} />}
         </button>
         <Link
           to={`/create/${story.slug}/chapters`}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors"
+          style={actionBtnStyle('var(--color-border)', 'var(--color-text-secondary)')}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text)'; e.currentTarget.style.background = 'var(--color-bg-tertiary)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'color-mix(in srgb, var(--color-border) 10%, transparent)' }}
           title="Manage chapters"
         >
           <FileText size={16} />
         </Link>
         <Link
           to={`/create/${story.slug}/edit`}
-          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors"
+          style={actionBtnStyle('var(--color-border)', 'var(--color-text-secondary)')}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text)'; e.currentTarget.style.background = 'var(--color-bg-tertiary)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'color-mix(in srgb, var(--color-border) 10%, transparent)' }}
           title="Edit story"
         >
           <Edit3 size={16} />
@@ -292,7 +338,9 @@ function StoryRow({ story, onDelete, onStatusChange }) {
         <button
           onClick={handleDelete}
           disabled={deleting}
-          className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+          style={actionBtnStyle('#ef4444', '#ef4444')}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, #ef4444 20%, transparent)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, #ef4444 10%, transparent)' }}
           title="Delete story"
         >
           {deleting ? <Spinner size="sm" /> : <Trash2 size={16} />}
@@ -379,12 +427,12 @@ export default function CreatorStudioPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-white">Creator Studio</h1>
-            <p className="text-white/50 mt-1">Manage your stories and track performance.</p>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>Creator Studio</h1>
+            <p className="text-secondary mt-1">Manage your stories and track performance.</p>
           </div>
           <div className="flex items-center gap-3">
             <Link to="/create/ai" className="btn-secondary gap-2">
-              <Sparkles size={18} className="text-orange-400" />
+              <Sparkles size={18} style={{ color: 'var(--color-primary)' }} />
               AI Studio
             </Link>
             <Link to="/create/new" className="btn-primary gap-2">
@@ -396,10 +444,10 @@ export default function CreatorStudioPage() {
 
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatCard icon={BookOpen}  label="Stories"   value={stats?.total_stories ?? stories.length}   color="text-orange-400" />
-          <StatCard icon={Eye}       label="Views"     value={totalViews.toLocaleString()}     color="text-blue-400" />
-          <StatCard icon={Heart}     label="Likes"     value={totalLikes.toLocaleString()}     color="text-pink-400" />
-          <StatCard icon={Users}     label="Followers" value={totalFollowers.toLocaleString()} color="text-green-400" />
+          <StatCard icon={BookOpen}  label="Stories"   value={stats?.total_stories ?? stories.length}   color="var(--color-primary)" />
+          <StatCard icon={Eye}       label="Views"     value={totalViews.toLocaleString()}     color="#3b82f6" />
+          <StatCard icon={Heart}     label="Likes"     value={totalLikes.toLocaleString()}     color="#ec4899" />
+          <StatCard icon={Users}     label="Followers" value={totalFollowers.toLocaleString()} color="#22c55e" />
         </div>
 
         {/* Analytics / performance */}
@@ -407,11 +455,11 @@ export default function CreatorStudioPage() {
           <div className="mb-10">
             <div className="flex items-end justify-between mb-5">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <BarChart2 size={20} className="text-orange-400" />
+                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+                  <BarChart2 size={20} style={{ color: 'var(--color-primary)' }} />
                   Performance
                 </h2>
-                <p className="text-white/40 text-sm mt-1">Views, likes, and followers over the last 14 days</p>
+                <p className="text-sm text-secondary mt-1">Views, likes, and followers over the last 14 days</p>
               </div>
             </div>
 
@@ -422,7 +470,7 @@ export default function CreatorStudioPage() {
                 points={analytics.views}
                 labels={formatDayLabels(analytics.days)}
                 color="#3b82f6"
-                accent="text-blue-400"
+                accent="#3b82f6"
               />
               <AnalyticsCard
                 icon={Heart}
@@ -430,7 +478,7 @@ export default function CreatorStudioPage() {
                 points={analytics.likes}
                 labels={formatDayLabels(analytics.days)}
                 color="#ec4899"
-                accent="text-pink-400"
+                accent="#ec4899"
               />
               <AnalyticsCard
                 icon={Users}
@@ -438,7 +486,7 @@ export default function CreatorStudioPage() {
                 points={analytics.followers}
                 labels={formatDayLabels(analytics.days)}
                 color="#22c55e"
-                accent="text-green-400"
+                accent="#22c55e"
               />
             </div>
 
@@ -448,8 +496,8 @@ export default function CreatorStudioPage() {
 
         {/* Stories list */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Your Stories</h2>
-          <span className="text-white/40 text-sm">{stories.length} total · {totalChapters} chapters</span>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>Your Stories</h2>
+          <span className="text-sm text-secondary">{stories.length} total · {totalChapters} chapters</span>
         </div>
 
         {loading ? (
@@ -457,10 +505,10 @@ export default function CreatorStudioPage() {
             <Spinner size="lg" />
           </div>
         ) : stories.length === 0 ? (
-          <div className="text-center py-20 glass-dark rounded-2xl border border-white/5">
-            <PenSquare size={40} className="text-white/20 mx-auto mb-4" />
-            <h3 className="text-white font-semibold mb-2">No stories yet</h3>
-            <p className="text-white/40 text-sm mb-6">Create your first story and start building your audience.</p>
+          <div className="text-center py-20" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '1.5rem' }}>
+            <PenSquare size={40} style={{ color: 'var(--color-text-muted)' }} className="mx-auto mb-4" />
+            <h3 className="font-semibold mb-2" style={{ color: 'var(--color-text)' }}>No stories yet</h3>
+            <p className="text-sm text-secondary mb-6">Create your first story and start building your audience.</p>
             <Link to="/create/new" className="btn-primary gap-2 inline-flex">
               <Plus size={16} />
               Create Your First Story

@@ -8,7 +8,6 @@ import toast from 'react-hot-toast'
 import AuthLayout from '../../layouts/AuthLayout'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Input, PasswordInput } from '../../components/ui'
-import GoogleSignInButton from '../../components/auth/GoogleSignInButton'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -71,17 +70,6 @@ export default function LoginPage() {
             required
             autoComplete="current-password"
           />
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[var(--color-card)] text-[var(--color-muted)]">Or continue with</span>
-            </div>
-          </div>
-
-          <GoogleSignInButton />
 
           {error && (
             <p className="text-sm text-red-500 text-center bg-red-50 dark:bg-red-950/30 rounded-lg px-4 py-2">

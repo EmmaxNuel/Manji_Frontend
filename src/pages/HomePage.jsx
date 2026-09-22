@@ -15,17 +15,116 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Flame, Sparkles, TrendingUp, User, Users, ArrowRight, Eye, Heart,
+  BookOpen, Play, Star
 } from 'lucide-react'
 import MainLayout from '../layouts/MainLayout'
 import { useAuth } from '../context/AuthContext'
 import { storyService } from '../services/storyService'
+import officialService from '../services/officialService'
 import StoryCard from '../components/ui/StoryCard'
-import { Spinner, Avatar } from '../components/ui'
+import { Spinner, Avatar, Badge } from '../components/ui'
 import { BarChart } from '../components/ui/charts'
 
 // ---------------------------------------------------------------------------
-// Featured hero
+// Official Content Section
 // ---------------------------------------------------------------------------
+
+function OfficialContentSection({ series, story, chapters, animation, episodes }) {
+  if (!series || !story) return null
+
+  return (
+    <section className="page-container py-20">
+      <div className="relative overflow-hidden rounded-3xl border border-orange-500/25 bg-gradient-to-r from-orange-900/20 via-black to-purple-900/20 p-8 md:p-12">
+        {/* Accent glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-purple-500/5" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row gap-8 md:items-center">
+          <div className="flex-shrink-0">
+            {story.cover ? (
+              <img
+                src={story.cover}
+                alt={story.title}
+                className="w-24 h-32 md:w-32 md:h-44 object-cover rounded-xl shadow-2xl shadow-orange-500/30 ring-1 ring-orange-500/40"
+              />
+            ) : (
+              <div className="w-24 h-32 md:w-32 md:h-44 rounded-xl bg-gradient-to-br from-orange-600/30 to-purple-600/30 flex items-center justify-center border border-orange-500/20">
+                <BookOpen size={32} className="text-orange-400/60" />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-1 min-w-0 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+              <Badge variant="accent" className="text-xs font-bold uppercase tracking-widest">
+                MANJI ORIGINAL
+              </Badge>
+              <Badge variant="primary" className="text-xs">
+                Season 1: Awakening
+              </Badge>
+            </div>
+            
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 font-serif">
+              {story.title}
+            </h2>
+            <p className="text-white/70 text-base md:text-lg mb-6 max-w-2xl leading-relaxed mx-auto md:mx-0">
+              {story.description}
+            </p>
+            
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-6">
+              <span className="flex items-center gap-1.5 text-white/50 text-sm">
+                <BookOpen size={14} /> {chapters?.length || 0} Chapters
+              </span>
+              <span className="flex items-center gap-1.5 text-white/50 text-sm">
+                <Star size={14} className="text-orange-400" /> Official Canon
+              </span>
+              {animation && episodes.length > 0 && (
+                <span className="flex items-center gap-1.5 text-white/50 text-sm">
+                  <Play size={14} className="text-orange-400" /> {episodes.length} Episodes
+                </span>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              <Link to="/official" className="btn-primary text-base px-8 py-3 shadow-2xl shadow-orange-500/30">
+                <BookOpen size={16} className="mr-1.5" /> Read Story
+              </Link>
+              <Link to="/official" className="btn-ghost text-base px-8 py-3 border border-orange-500/50 text-orange-400 hover:bg-orange-500/10">
+                <Play size={16} className="mr-1.5" /> View on Official Page
+              </Link>
+            </div>
+          </div>
+          
+          {/* Chapter preview cards */}
+          <div className="hidden md:block w-64 flex-shrink-0">
+            <p className="text-white/50 text-xs uppercase tracking-wider mb-3">Recent Chapters</p>
+            <div className="space-y-2">
+              {chapters?.slice(0, 3).map((chapter, idx) => (
+                <Link
+                  key={chapter.chapter?.id || chapter.id}
+                  to={`/chapters/${chapter.chapter?.id || chapter.id}`}
+                  className="flex items-center gap-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                >
+                  <span className="text-orange-400 font-mono text-xs w-8">Ch. {chapter.chapter?.chapter_number || chapter.order}</span>
+                  <span className="text-white/80 text-sm truncate group-hover:text-orange-400 transition-colors">
+                    {chapter.chapter?.title || chapter.title}
+                  </span>
+                </Link>
+              ))}
+              {chapters?.length > 3 && (
+                <Link
+                  to="/official"
+                  className="flex items-center justify-center gap-1 text-orange-400 text-xs hover:text-orange-300 mt-2"
+                >
+                  +{chapters.length - 3} more chapters <ArrowRight size={12} />
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function FeaturedHero({ story }) {
   if (!story) return null
@@ -97,14 +196,14 @@ function TrendingChart({ stories }) {
   return (
     <div className="card p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Flame size={18} className="text-orange-400" />
-        <h3 className="text-white font-semibold">Trending this week</h3>
-        <span className="ml-auto text-white/40 text-xs">sorted by likes</span>
+        <Flame size={18} style={{ color: 'var(--color-primary)' }} />
+        <h3 className="font-semibold" style={{ color: 'var(--color-text)' }}>Trending this week</h3>
+        <span className="ml-auto text-xs text-secondary">sorted by likes</span>
       </div>
       <BarChart bars={bars} labels={labels} color="#f97316" height={160} />
-      <div className="mt-4 flex items-center justify-between text-white/50 text-xs">
-        <span>Top story: <span className="text-orange-400 font-medium">{top[0].title}</span></span>
-        <Link to="/discover" className="text-orange-400 hover:text-orange-300 flex items-center gap-1 font-medium">
+      <div className="mt-4 flex items-center justify-between text-xs text-secondary">
+        <span>Top story: <span className="font-medium" style={{ color: 'var(--color-primary)' }}>{top[0].title}</span></span>
+        <Link to="/discover" className="font-medium flex items-center gap-1 transition-colors" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
           Explore <ArrowRight size={14} />
         </Link>
       </div>
@@ -126,28 +225,28 @@ function CreatorSpotlightCard({ creator }) {
         <Avatar src={creator.avatar} username={creator.username} size="md" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-white font-semibold truncate">{creator.username}</p>
+            <p className="font-semibold truncate" style={{ color: 'var(--color-text)' }}>{creator.username}</p>
             {creator.is_official && (
               <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold">
                 Official
               </span>
             )}
           </div>
-          <p className="text-white/40 text-xs">{creator.bio || 'Storyteller on Manji'}</p>
+          <p className="text-xs text-secondary">{creator.bio || 'Storyteller on Manji'}</p>
         </div>
       </div>
-      <div className="flex items-center justify-between text-xs text-white/50 mb-4">
-        <span className="flex items-center gap-1"><Users size={13} /> {creator.total_story_followers?.toLocaleString()} followers</span>
-        <span className="flex items-center gap-1"><Eye size={13} /> {creator.total_views?.toLocaleString()} views</span>
+      <div className="flex items-center justify-between text-xs text-secondary mb-4">
+        <span className="flex items-center gap-1"><Users size={13} style={{ color: 'var(--color-text-secondary)' }} /> {creator.total_story_followers?.toLocaleString()} followers</span>
+        <span className="flex items-center gap-1"><Eye size={13} style={{ color: 'var(--color-text-secondary)' }} /> {creator.total_views?.toLocaleString()} views</span>
       </div>
       {creator.top_story ? (
-        <div className="rounded-xl bg-white/5 p-3 group-hover:bg-white/10 transition-colors">
-          <p className="text-[11px] text-white/40 mb-1">Top story</p>
-          <p className="text-white text-sm font-medium truncate">{creator.top_story.title}</p>
-          <p className="text-orange-400 text-xs mt-1">Read now →</p>
+        <div className="rounded-xl p-3 transition-colors group" style={{ background: 'var(--color-input-bg)' }}>
+          <p className="text-[11px] text-secondary mb-1">Top story</p>
+          <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{creator.top_story.title}</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--color-primary)' }}>Read now →</p>
         </div>
       ) : (
-        <div className="rounded-xl bg-white/5 p-3 text-white/40 text-xs">No published stories yet</div>
+        <div className="rounded-xl p-3 text-xs text-secondary" style={{ background: 'var(--color-input-bg)' }}>No published stories yet</div>
       )}
     </Link>
   )
@@ -161,16 +260,16 @@ function SectionHeader({ icon: Icon, title, subtitle, linkTo, linkLabel = 'View 
   return (
     <div className="flex items-end justify-between mb-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-400">
+        <div className="p-2 rounded-xl" style={{ background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)', color: 'var(--color-primary)' }}>
           <Icon size={20} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-white">{title}</h2>
-          {subtitle && <p className="text-white/40 text-sm">{subtitle}</p>}
+          <h2 className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{title}</h2>
+          {subtitle && <p className="text-sm text-secondary">{subtitle}</p>}
         </div>
       </div>
       {linkTo && (
-        <Link to={linkTo} className="text-orange-400 hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+        <Link to={linkTo} className="text-sm font-medium flex items-center gap-1 transition-colors" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
           {linkLabel} <ArrowRight size={16} />
         </Link>
       )}
@@ -189,7 +288,13 @@ export default function HomePage() {
   const [trending, setTrending] = useState([])
   const [creators, setCreators] = useState([])
   const [recommended, setRecommended] = useState([])
+  const [officialSeries, setOfficialSeries] = useState(null)
+  const [officialStory, setOfficialStory] = useState(null)
+  const [officialChapters, setOfficialChapters] = useState([])
+  const [officialAnimation, setOfficialAnimation] = useState(null)
+  const [officialEpisodes, setOfficialEpisodes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [officialLoading, setOfficialLoading] = useState(true)
 
   useEffect(() => {
     async function loadFeed() {
@@ -214,7 +319,61 @@ export default function HomePage() {
     loadFeed()
   }, [])
 
-  const officialStory =
+  useEffect(() => {
+    async function loadOfficial() {
+      setOfficialLoading(true)
+      try {
+        const seriesRes = await officialService.getSeries()
+        const seriesData = seriesRes.data.results || seriesRes.data
+        const manjiSeries = Array.isArray(seriesData) ? seriesData.find(s => s.slug === 'manji') : seriesData
+        if (manjiSeries) {
+          setOfficialSeries(manjiSeries)
+          
+          const seasonsRes = await officialService.getSeasons(manjiSeries.slug)
+          const seasonsData = seasonsRes.data.results || seasonsRes.data
+          const seasonData = Array.isArray(seasonsData) ? seasonsData[0] : seasonsData
+          
+          if (seasonData) {
+            const arcsRes = await officialService.getArcs(seasonData.id)
+            const arcsData = arcsRes.data.results || arcsRes.data
+            const arcData = Array.isArray(arcsData) ? arcsData.find(a => a.slug === 'the-world-beyond') : arcsData
+            
+            if (arcData) {
+              const storiesRes = await officialService.getStories(arcData.id)
+              const storiesData = storiesRes.data.results || storiesRes.data
+              const storyData = Array.isArray(storiesData) ? storiesData[0] : storiesData
+              
+              if (storyData) {
+                setOfficialStory(storyData)
+                
+                const chaptersRes = await officialService.getChapters(storyData.id)
+                const chaptersData = chaptersRes.data.results || chaptersRes.data
+                setOfficialChapters(Array.isArray(chaptersData) ? chaptersData : [])
+              }
+            }
+          }
+        }
+        
+        // Load animation
+        const animRes = await officialService.getAnimations()
+        const animData = animRes.data.results || animRes.data
+        const manjiAnim = Array.isArray(animData) ? animData[0] : animData
+        if (manjiAnim) {
+          setOfficialAnimation(manjiAnim)
+          const epRes = await officialService.getEpisodes(manjiAnim.id)
+          const epData = epRes.data.results || epRes.data
+          setOfficialEpisodes(Array.isArray(epData) ? epData : [])
+        }
+      } catch {
+        // non-fatal
+      } finally {
+        setOfficialLoading(false)
+      }
+    }
+    loadOfficial()
+  }, [])
+
+  const homeFeaturedStory =
     featured.find((s) => s.is_official) || featured[0] || null
 
   return (
@@ -273,6 +432,17 @@ export default function HomePage() {
 
       {/* Featured story hero */}
       <FeaturedHero story={officialStory} />
+
+      {/* Official MANJI Content Section */}
+      {!officialLoading && officialSeries && officialStory && (
+        <OfficialContentSection
+          series={officialSeries}
+          story={officialStory}
+          chapters={officialChapters}
+          animation={officialAnimation}
+          episodes={officialEpisodes}
+        />
+      )}
 
       {/* Content Types - Premium Grid */}
       <section className="page-container py-24">
@@ -337,7 +507,7 @@ export default function HomePage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="card p-8 text-center text-white/40">No trending stories yet.</div>
+                      <div className="card p-8 text-center text-muted">No trending stories yet.</div>
                     )}
                   </div>
                 </div>
@@ -358,7 +528,7 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="card p-8 text-center text-white/40">No featured stories yet.</div>
+                  <div className="card p-8 text-center text-muted">No featured stories yet.</div>
                 )}
               </div>
 
@@ -377,7 +547,7 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="card p-8 text-center text-white/40">No creators spotlighted yet.</div>
+                  <div className="card p-8 text-center text-muted">No creators spotlighted yet.</div>
                 )}
               </div>
 
@@ -400,7 +570,7 @@ export default function HomePage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="card p-8 text-center text-white/40">No recommendations yet — start reading to get some!</div>
+                  <div className="card p-8 text-center text-muted">No recommendations yet — start reading to get some!</div>
                 )}
               </div>
             </div>
