@@ -125,6 +125,18 @@ footer a:hover{color:#fff}
 </div></div>
 
 <div class="card" id="changelog-card" style="display:none"><h2>What's new</h2><ul id="changelog"></ul></div>
+
+<div class="card" id="history-card" style="display:none"><h2>Release history</h2><div id="history"></div></div>
+
+<div class="card" id="feedback-card"><h2>Feedback &amp; feature requests</h2>
+<p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:20px">Found a bug? Want a feature? Tell us — it shapes what we build next.</p>
+<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=feedback">💬 Give feedback</a>
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=bug">🐞 Report a bug</a>
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=enhancement">✨ Request a feature</a>
+</div>
+<div id="giscus-wrap" style="max-width:720px;margin:0 auto"></div>
+</div>
 </div>
 
 <footer><div class="container">
@@ -172,6 +184,45 @@ fetch(API).then(r => { if(!r.ok) throw new Error("Release not found (HTTP "+r.st
   errBox.innerHTML = "⚠ Windows installer not published yet.<br><small>"+e.message+'. Check <a style="color:#fff" href="https://github.com/'+REPO+'/releases">all releases</a>.</small>';
   verInfo.textContent = "";
 });
+
+// Release history (last 5) — automatic "What's New" feed
+fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=5").then(r => r.ok ? r.json() : []).then(rels => {
+  if(!Array.isArray(rels) || !rels.length) return;
+  document.getElementById("history-card").style.display = "block";
+  document.getElementById("history").innerHTML = rels.map(rel => {
+    const ver = (rel.tag_name||"").replace(/^v/,"");
+    const exe = (rel.assets||[]).find(a => /\.exe$/i.test(a.name) && !/blockmap/i.test(a.name));
+    const notes = (rel.body||"").split("\n").filter(l=>/^[-*•]/.test(l.trim())).slice(0,5)
+      .map(l=>"<li style='font-size:13px;color:var(--muted)'>"+l.replace(/^[-*•\s]+/,"")+"</li>").join("");
+    return "<div style='padding:16px 0;border-bottom:1px solid var(--border)'>"
+      + "<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px'>"
+      + "<strong>v"+ver+"</strong><span style='font-size:12px;color:var(--muted)'>"+fmtDate(rel.published_at)+"</span></div>"
+      + (notes ? "<ul style='list-style:none;margin-top:8px'>"+notes+"</ul>" : "")
+      + "<div style='margin-top:8px'><a style='font-size:13px;color:var(--orange)' href='"+(exe?exe.browser_download_url:rel.html_url)+"'>"
+      + (exe ? "⬇ Download v"+ver+" ("+fmtBytes(exe.size)+")" : "View release") + "</a></div></div>";
+  }).join("");
+}).catch(()=>{});
+
+// Giscus comments (GitHub Discussions) — activate in 2 steps, degrades gracefully
+// STEP 1: repo Settings → General → check "Discussions"
+// STEP 2: install https://github.com/apps/giscus, then fill repo-id/category-id below
+(function(){
+  var GISCUS_REPO_ID = "";      // e.g. "R_kgDOPxxxx"
+  var GISCUS_CATEGORY_ID = "";  // e.g. "DIC_kwDOPxxxx"
+  if(!GISCUS_REPO_ID || !GISCUS_CATEGORY_ID) return; // buttons above already work
+  var s = document.createElement("script");
+  s.src = "https://giscus.app/client.js";
+  s.async = true; s.crossOrigin = "anonymous";
+  s.setAttribute("data-repo", REPO);
+  s.setAttribute("data-repo-id", GISCUS_REPO_ID);
+  s.setAttribute("data-category", "Feedback");
+  s.setAttribute("data-category-id", GISCUS_CATEGORY_ID);
+  s.setAttribute("data-mapping", "pathname");
+  s.setAttribute("data-reactions-enabled", "1");
+  s.setAttribute("data-theme", "dark");
+  s.setAttribute("data-lang", "en");
+  document.getElementById("giscus-wrap").appendChild(s);
+})();
 </script>
 </body>
 </html>

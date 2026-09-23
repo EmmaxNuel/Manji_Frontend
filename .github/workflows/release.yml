@@ -2,7 +2,8 @@ name: Build Windows Installer
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -10,64 +11,36 @@ permissions:
 
 jobs:
   build-installer:
-    name: Build Windows installer
     runs-on: windows-latest
     timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: .
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Build frontend
-        run: npm run build
+      - run: npm run build
         env:
           VITE_API_URL: https://manji-api.onrender.com
 
-      - name: Build Windows installer (NSIS + portable)
-        run: npx electron-builder --win --publish never
+      - run: npx electron-builder --win --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: List artifacts
-        run: Get-ChildItem -Recurse release/ | Select-Object FullName, Length
-        shell: pwsh
-
-      - name: Create GitHub Release with installer
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: MANJI ${{ github.ref_name }}
           body: |
-            ## MANJI ${{ github.ref_name }} — Windows Desktop App
-
-            ### Downloads
-            - **NSIS Installer** (recommended): `Manji Studio Setup *.exe`
-            - **Portable**: `Manji Studio *.exe` (no install needed)
-
-            ### Install
-            1. Download the Setup exe below
-            2. Run it, follow the wizard
-            3. Launch "Manji Studio" from Start Menu
-
-            ### Requirements
-            - Windows 10 version 1903+ (64-bit)
-            - 8 GB RAM minimum
-            - Internet for AI + cloud sync
+            ## MANJI Desktop App for Windows
+            Download the Setup exe below, run it, follow the wizard.
+            Requires Windows 10 1903+ (64-bit), 8 GB RAM, internet for AI.
           files: |
             release/*.exe
           generate_release_notes: true
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
