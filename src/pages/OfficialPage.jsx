@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Play, BookOpen, Users, ChevronRight, Star, Sparkles, X, Eye, ArrowRight } from 'lucide-react'
 import { Badge, Spinner } from '../components/ui'
+import MainLayout from '../layouts/MainLayout'
 import ManjiGuide from '../components/manji/ManjiGuide'
 import VideoPlayer from '../components/VideoPlayer'
 import officialService from '../services/officialService'
@@ -103,18 +104,22 @@ export default function OfficialPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-24">
-        <Spinner size="lg" />
-      </div>
+      <MainLayout>
+        <div className="flex justify-center py-24">
+          <Spinner size="lg" />
+        </div>
+      </MainLayout>
     )
   }
 
   if (!series || !story) {
     return (
-      <div className="card p-10 text-center text-white/60">
-        <Sparkles size={32} className="mx-auto mb-3 text-orange-400" />
-        <p>Official story is not available right now.</p>
-      </div>
+      <MainLayout>
+        <div className="card p-10 text-center text-white/60">
+          <Sparkles size={32} className="mx-auto mb-3 text-orange-400" />
+          <p>Official story is not available right now.</p>
+        </div>
+      </MainLayout>
     )
   }
 
@@ -125,6 +130,7 @@ export default function OfficialPage() {
   ]
 
   return (
+    <MainLayout>
     <div className="space-y-8">
       {/* Hero */}
       <div className="card overflow-hidden">
@@ -355,5 +361,6 @@ export default function OfficialPage() {
         </div>
       )}
     </div>
+    </MainLayout>
   )
 }
