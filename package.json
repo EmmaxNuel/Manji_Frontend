@@ -70,6 +70,26 @@
         }
       ],
       "icon": "src/assets/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MANJI Studio",
+      "artifactName": "MANJI-Setup-${version}.${ext}",
+      "installerIcon": "src/assets/logo.png",
+      "uninstallerIcon": "src/assets/logo.png",
+      "uninstallerDisplayName": "MANJI Studio",
+      "license": "LICENSE.txt",
+      "displayLanguageSelector": false,
+      "packElevateHelper": true,
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": true
+    },
+    "portable": {
+      "artifactName": "MANJI-Portable-${version}.${ext}"
     }
   }
 }

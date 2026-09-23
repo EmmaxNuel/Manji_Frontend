@@ -1,0 +1,37 @@
+MANJI STUDIO — END USER LICENSE AGREEMENT
+
+Version 1.0 — Copyright (c) 2026 MANJI.
+
+1. GRANT OF LICENSE. MANJI grants you a free, non-exclusive,
+non-transferable license to install and use MANJI Studio on
+Windows devices you own or control, for creating original
+stories, artwork, and animations.
+
+2. OWNERSHIP. MANJI Studio and the official MANJI story,
+characters, artwork, and animations ("Official Content") remain
+the property of MANJI. You may read, watch, and enjoy Official
+Content, but you may not copy, redistribute, or claim it as
+your own. Content YOU create with MANJI Studio belongs to you.
+
+3. ACCEPTABLE USE. You agree not to use MANJI Studio to create
+or distribute unlawful, abusive, or infringing content, and not
+to reverse-engineer, redistribute, or resell the software itself.
+
+4. ONLINE SERVICES. Features such as accounts, cloud sync,
+MANJI AI, and publishing require an internet connection and are
+subject to the MANJI Terms of Service and Privacy Policy at
+https://manji.io.
+
+5. UPDATES. MANJI Studio may check for and install updates
+automatically to keep the software secure and reliable.
+
+6. NO WARRANTY. The software is provided "AS IS", without
+warranty of any kind. In no event shall MANJI be liable for any
+damages arising from the use of this software.
+
+7. TERMINATION. This license ends automatically if you breach
+its terms. You may terminate it at any time by uninstalling
+MANJI Studio.
+
+By installing MANJI Studio you agree to the terms above.
+Contact: support@manji.io
