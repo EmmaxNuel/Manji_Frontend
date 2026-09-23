@@ -78,7 +78,7 @@ footer a:hover{color:#fff}
 <header>
 <div class="container">
 <a class="logo" href="/">MANJI</a>
-<nav><a href="/">Home</a><a href="https://github.com/EmmaxNuel/Manji_Frontend/releases">Releases</a><a href="https://github.com/EmmaxNuel/Manji_Frontend">GitHub</a></nav>
+<nav><a href="#features">Features</a><a href="#requirements">Requirements</a><a href="#feedback">Feedback</a></nav>
 </div>
 </header>
 
@@ -100,7 +100,7 @@ footer a:hover{color:#fff}
 <div class="stat"><div class="num" id="st-date">—</div><div class="lbl">Released</div></div>
 </div>
 
-<div class="card"><h2>Everything you need to create</h2><div class="grid">
+<div class="card" id="features"><h2>Everything you need to create</h2><div class="grid">
 <div class="feat"><div class="icon">📖</div><h3>Story Studio</h3><p>Write novels, comics, manga with AI-assisted chapters and character development.</p></div>
 <div class="feat"><div class="icon">🎭</div><h3>Character Designer</h3><p>Detailed profiles with visual references, relationships, consistent AI art.</p></div>
 <div class="feat"><div class="icon">🎬</div><h3>Animation Studio</h3><p>Frame-by-frame 2D animation with onion skinning, layers, and timeline.</p></div>
@@ -109,7 +109,7 @@ footer a:hover{color:#fff}
 <div class="feat"><div class="icon">🤖</div><h3>Manji AI</h3><p>Context-aware co-author that knows your project, cast, and scenes.</p></div>
 </div></div>
 
-<div class="card"><h2>System requirements</h2><div class="req">
+<div class="card" id="requirements"><h2>System requirements</h2><div class="req">
 <div><h3 style="margin-bottom:12px">Minimum</h3><ul>
 <li>Windows 10 version 1903+ (64-bit)</li><li>Intel Core i5 / AMD Ryzen 5</li><li>8 GB RAM</li><li>2 GB free disk space</li><li>Internet for AI features</li>
 </ul></div>
@@ -128,21 +128,19 @@ footer a:hover{color:#fff}
 
 <div class="card" id="history-card" style="display:none"><h2>Release history</h2><div id="history"></div></div>
 
-<div class="card" id="feedback-card"><h2>Feedback &amp; feature requests</h2>
+<div class="card" id="feedback"><h2>Feedback &amp; feature requests</h2>
 <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:20px">Found a bug? Want a feature? Tell us — it shapes what we build next.</p>
 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
-<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=feedback">💬 Give feedback</a>
-<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=bug">🐞 Report a bug</a>
-<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="https://github.com/EmmaxNuel/Manji_Frontend/issues/new?labels=enhancement">✨ Request a feature</a>
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="mailto:support@manji.io?subject=MANJI%20feedback">💬 Give feedback</a>
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="mailto:support@manji.io?subject=MANJI%20bug%20report">🐞 Report a bug</a>
+<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="mailto:support@manji.io?subject=MANJI%20feature%20request">✨ Request a feature</a>
 </div>
 <div id="giscus-wrap" style="max-width:720px;margin:0 auto"></div>
 </div>
 </div>
 
 <footer><div class="container">
-<a href="https://github.com/EmmaxNuel/Manji_Frontend">GitHub</a>
-<a href="https://github.com/EmmaxNuel/Manji_Frontend/releases">All releases</a>
-<a href="mailto:support@manji.io">Support</a>
+<a href="mailto:support@manji.io">Contact support</a>
 <p style="margin-top:12px">© 2026 MANJI. Free download for Windows.</p>
 </div></footer>
 
@@ -156,51 +154,72 @@ const errBox = document.getElementById("error-box");
 
 function fmtBytes(b){ if(!b) return "—"; return (b/1048576).toFixed(1)+" MB"; }
 function fmtDate(s){ if(!s) return "—"; return new Date(s).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}); }
+function listExes(rel){ return (rel.assets||[]).filter(a => /\.exe$/i.test(a.name) && !/blockmap/i.test(a.name)); }
+function pickVersion(rel, exe){
+  var m = exe && exe.name ? exe.name.match(/(\d+\.\d+(?:\.\d+)?)/) : null;
+  if(m) return m[1];
+  var t = String(rel.tag_name||"").replace(/^v/i,"");
+  if(/^\d+\.\d+/.test(t)) return t;
+  var n = String(rel.name||"").match(/(\d+\.\d+(?:\.\d+)?)/);
+  if(n) return n[1];
+  return "1.0";
+}
+function cleanNotes(body, max){
+  return String(body||"").split("\n").map(function(l){ return l.trim(); })
+    .filter(function(l){ return /^[-*•#]/.test(l) && !/https?:\/\//.test(l) && !/^#*\s*full changelog/i.test(l); })
+    .slice(0, max || 10);
+}
 
-fetch(API).then(r => { if(!r.ok) throw new Error("Release not found (HTTP "+r.status+")"); return r.json(); })
+fetch(API).then(r => { if(!r.ok) throw new Error("No published installer yet (HTTP "+r.status+")"); return r.json(); })
 .then(rel => {
-  const exe = (rel.assets||[]).find(a => /\.exe$/i.test(a.name) && !/blockmap/i.test(a.name));
-  if(!exe) throw new Error("No Windows installer in the latest release yet.");
-  const ver = rel.tag_name.replace(/^v/,"");
+  const exes = listExes(rel);
+  if(!exes.length) throw new Error("No Windows installer in the latest release yet.");
+  const exe = exes.find(a => /setup/i.test(a.name)) || exes[0];
+  const ver = pickVersion(rel, exe);
   btn.disabled = false;
   btn.innerHTML = "⬇ Download MANJI " + ver + " for Windows";
   btn.onclick = () => { const a=document.createElement("a"); a.href=exe.browser_download_url; a.download=exe.name; document.body.appendChild(a); a.click(); a.remove(); };
-  verInfo.innerHTML = "<strong>v"+ver+"</strong> · "+fmtBytes(exe.size)+" · Released "+fmtDate(rel.published_at);
+  verInfo.innerHTML = "<strong>MANJI "+ver+"</strong> · "+fmtBytes(exe.size)+" · Released "+fmtDate(rel.published_at);
   document.getElementById("stats").style.display = "grid";
-  document.getElementById("st-ver").textContent = "v"+ver;
+  document.getElementById("st-ver").textContent = ver;
   document.getElementById("st-size").textContent = fmtBytes(exe.size);
   document.getElementById("st-date").textContent = fmtDate(rel.published_at);
-  if(rel.body){ const items = rel.body.split("\n").filter(l=>/^[-*•#]/.test(l.trim())).slice(0,10);
-    if(items.length){ document.getElementById("changelog-card").style.display="block";
-      document.getElementById("changelog").innerHTML = items.map(i=>"<li>"+i.replace(/^[-*•#\s]+/,"")+"</li>").join(""); } }
-  const port = (rel.assets||[]).find(a => /portable/i.test(a.name) && /\.exe$/i.test(a.name));
-  if(port){ const p=document.createElement("div"); p.style.marginTop="12px";
-    p.innerHTML='<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="'+port.browser_download_url+'">Portable ('+fmtBytes(port.size)+')</a>';
+  const items = cleanNotes(rel.body, 10);
+  if(items.length){ document.getElementById("changelog-card").style.display="block";
+    document.getElementById("changelog").innerHTML = items.map(i=>"<li>"+i.replace(/^[-*•#\s]+/,"")+"</li>").join(""); }
+  const other = exes.find(a => a.id !== exe.id);
+  if(other){ const p=document.createElement("div"); p.style.marginTop="12px";
+    const label = /portable/i.test(other.name) ? "Portable" : "Standalone";
+    p.innerHTML='<a class="btn btn-secondary" style="font-size:14px;padding:10px 24px" href="'+other.browser_download_url+'">'+label+' ('+fmtBytes(other.size)+')</a>';
     area.appendChild(p); }
 })
 .catch(e => {
   btn.style.display = "none";
   errBox.style.display = "block";
-  errBox.innerHTML = "⚠ Windows installer not published yet.<br><small>"+e.message+'. Check <a style="color:#fff" href="https://github.com/'+REPO+'/releases">all releases</a>.</small>';
+  errBox.innerHTML = "⚠ Windows installer not published yet.<br><small>Please check back soon — new releases appear here automatically.</small>";
   verInfo.textContent = "";
 });
 
-// Release history (last 5) — automatic "What's New" feed
+// Release history (last 5) — automatic "What's New" feed, direct downloads only
 fetch("https://api.github.com/repos/" + REPO + "/releases?per_page=5").then(r => r.ok ? r.json() : []).then(rels => {
   if(!Array.isArray(rels) || !rels.length) return;
-  document.getElementById("history-card").style.display = "block";
-  document.getElementById("history").innerHTML = rels.map(rel => {
-    const ver = (rel.tag_name||"").replace(/^v/,"");
-    const exe = (rel.assets||[]).find(a => /\.exe$/i.test(a.name) && !/blockmap/i.test(a.name));
-    const notes = (rel.body||"").split("\n").filter(l=>/^[-*•]/.test(l.trim())).slice(0,5)
-      .map(l=>"<li style='font-size:13px;color:var(--muted)'>"+l.replace(/^[-*•\s]+/,"")+"</li>").join("");
+  const rows = rels.map(rel => {
+    const exes = listExes(rel);
+    const exe = exes.find(a => /setup/i.test(a.name)) || exes[0];
+    if(!exe) return "";
+    const ver = pickVersion(rel, exe);
+    const notes = cleanNotes(rel.body, 5)
+      .map(l=>"<li style='font-size:13px;color:var(--muted)'>"+l.replace(/^[-*•#\s]+/,"")+"</li>").join("");
     return "<div style='padding:16px 0;border-bottom:1px solid var(--border)'>"
       + "<div style='display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px'>"
-      + "<strong>v"+ver+"</strong><span style='font-size:12px;color:var(--muted)'>"+fmtDate(rel.published_at)+"</span></div>"
+      + "<strong>MANJI "+ver+"</strong><span style='font-size:12px;color:var(--muted)'>"+fmtDate(rel.published_at)+"</span></div>"
       + (notes ? "<ul style='list-style:none;margin-top:8px'>"+notes+"</ul>" : "")
-      + "<div style='margin-top:8px'><a style='font-size:13px;color:var(--orange)' href='"+(exe?exe.browser_download_url:rel.html_url)+"'>"
-      + (exe ? "⬇ Download v"+ver+" ("+fmtBytes(exe.size)+")" : "View release") + "</a></div></div>";
+      + "<div style='margin-top:8px'><a style='font-size:13px;color:var(--orange)' href='"+exe.browser_download_url+"'>"
+      + "⬇ Download MANJI "+ver+" ("+fmtBytes(exe.size)+")</a></div></div>";
   }).join("");
+  if(!rows) return;
+  document.getElementById("history-card").style.display = "block";
+  document.getElementById("history").innerHTML = rows;
 }).catch(()=>{});
 
 // Giscus comments (GitHub Discussions) — activate in 2 steps, degrades gracefully
