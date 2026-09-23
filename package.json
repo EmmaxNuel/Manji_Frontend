@@ -81,7 +81,7 @@
       "artifactName": "MANJI-Setup-${version}.${ext}",
       "installerIcon": "src/assets/logo.png",
       "uninstallerIcon": "src/assets/logo.png",
-      "uninstallerDisplayName": "MANJI Studio",
+      "uninstallDisplayName": "MANJI Studio",
       "license": "LICENSE.txt",
       "displayLanguageSelector": false,
       "packElevateHelper": true,
