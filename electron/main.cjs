@@ -22,7 +22,7 @@ let mainWindow = null
 let transitioned = false
 // Minimum brand moment: long enough to read the logo + tagline,
 // short enough to stay inside the 1-3s startup budget.
-const MIN_SPLASH_MS = 1200
+const MIN_SPLASH_MS = 1500
 let splashShownAt = 0
 
 function sendFile(response, filePath) {
@@ -101,10 +101,15 @@ function setSplashError(text) {
 
 function transitionToMain() {
   if (transitioned) return
-  // Let the splash breathe: if the app was ready faster than the
-  // minimum brand moment, wait out the remainder (errors bypass this).
-  const elapsed = splashShownAt > 0 ? Date.now() - splashShownAt : MIN_SPLASH_MS
-  const remaining = MIN_SPLASH_MS - elapsed
+  // The splash must actually appear first: if the main window won the
+  // race and got ready before the splash was shown, wait for it.
+  if (!splashShownAt) {
+    setTimeout(transitionToMain, 100)
+    return
+  }
+  // Then let the splash breathe for the minimum brand moment.
+  // (Errors bypass this via setSplashError, never transitionToMain.)
+  const remaining = MIN_SPLASH_MS - (Date.now() - splashShownAt)
   if (remaining > 0) {
     setTimeout(transitionToMain, remaining)
     return
