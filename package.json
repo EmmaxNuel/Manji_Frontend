@@ -53,7 +53,7 @@
     ],
     "asar": true,
     "npmRebuild": false,
-    "icon": "src/assets/logo.png",
+    "icon": "src/assets/logo.ico",
     "win": {
       "target": [
         {
@@ -69,7 +69,7 @@
           ]
         }
       ],
-      "icon": "src/assets/logo.png"
+      "icon": "src/assets/logo.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -79,8 +79,8 @@
       "createStartMenuShortcut": true,
       "shortcutName": "MANJI Studio",
       "artifactName": "MANJI-Setup-${version}.${ext}",
-      "installerIcon": "src/assets/logo.png",
-      "uninstallerIcon": "src/assets/logo.png",
+      "installerIcon": "src/assets/logo.ico",
+      "uninstallerIcon": "src/assets/logo.ico",
       "uninstallDisplayName": "MANJI Studio",
       "license": "LICENSE.txt",
       "displayLanguageSelector": false,
