@@ -10,10 +10,17 @@ import axios from 'axios'
 
 const configuredBaseUrl = import.meta.env.VITE_API_URL || ''
 const desktopBaseUrl = typeof window !== 'undefined' && window.electronAPI?.apiBaseUrl
-// Build-time URL wins: release builds bake in the live backend, so the
-// installed desktop app talks to production. Local dev (no VITE_API_URL)
+// Services call paths like `/official/series/`, so the base must include
+// the `/api` prefix. Accept a bare origin (CI sometimes provides one) and
+// normalize it. Build-time URL wins: release builds bake in the live
+// backend so the installed app talks to production. Local dev (empty)
 // falls back to the Electron preload default (localhost or MANJI_API_URL).
-const BASE_URL = (configuredBaseUrl || desktopBaseUrl || '/api').replace(/\/$/, '')
+function normalizeBaseUrl(url) {
+  const trimmed = (url || '').replace(/\/$/, '')
+  if (!trimmed) return ''
+  return /\/api$/.test(trimmed) ? trimmed : `${trimmed}/api`
+}
+const BASE_URL = normalizeBaseUrl(configuredBaseUrl) || (desktopBaseUrl || '/api').replace(/\/$/, '')
 
 const api = axios.create({
   baseURL: BASE_URL,
