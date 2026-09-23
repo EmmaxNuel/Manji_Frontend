@@ -17,6 +17,10 @@ const mimeTypes = {
   '.webp': 'image/webp',
 }
 
+let splashWindow = null
+let mainWindow = null
+let transitioned = false
+
 function sendFile(response, filePath) {
   fs.readFile(filePath, (error, data) => {
     if (error) {
@@ -67,14 +71,85 @@ function startDesktopServer() {
   })
 }
 
-async function createWindow() {
-  const window = new BrowserWindow({
+function setSplashStatus(text) {
+  try {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.webContents.executeJavaScript(
+        `window.__manjiSplash && window.__manjiSplash.setStatus(${JSON.stringify(text)})`,
+      ).catch(() => {})
+    }
+  } catch {
+    // Splash already gone — transition happened. Nothing to do.
+  }
+}
+
+function setSplashError(text) {
+  try {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.webContents.executeJavaScript(
+        `window.__manjiSplash && window.__manjiSplash.setError(${JSON.stringify(text)})`,
+      ).catch(() => {})
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function transitionToMain() {
+  if (transitioned) return
+  transitioned = true
+  try {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  } finally {
+    try {
+      if (splashWindow && !splashWindow.isDestroyed()) splashWindow.destroy()
+    } catch {
+      // ignore
+    }
+    splashWindow = null
+  }
+}
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 440,
+    height: 560,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    frame: false,
+    transparent: false,
+    backgroundColor: '#0a0a0a',
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    title: 'Manji Studio',
+    show: false,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  })
+  splashWindow.loadFile(path.join(__dirname, 'splash.html'))
+  splashWindow.once('ready-to-show', () => {
+    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.show()
+  })
+  splashWindow.on('closed', () => {
+    splashWindow = null
+  })
+}
+
+function createMainWindow() {
+  mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
     minWidth: 1024,
     minHeight: 640,
     backgroundColor: '#0a0a0a',
     title: 'Manji Studio',
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -82,26 +157,83 @@ async function createWindow() {
     },
   })
 
-  window.webContents.setWindowOpenHandler(({ url }) => {
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) {
       shell.openExternal(url)
     }
     return { action: 'deny' }
   })
 
-  if (isDev) {
-    await window.loadURL(devUrl)
+  mainWindow.once('ready-to-show', () => {
+    // App rendered its first frame — transition immediately.
+    // No artificial delay: fast loads go straight in.
+    transitionToMain()
+  })
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedUrl, isMainFrame) => {
+    if (!isMainFrame || transitioned) return
+    setSplashError(`Could not load MANJI (${errorDescription || errorCode}). Check your connection and restart the app. Tried: ${validatedUrl}`)
+  })
+
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  })
+}
+
+async function initialize() {
+  // 1. Splash is already visible (created first in whenReady).
+  // 2. Build the hidden main window in parallel with URL resolution.
+  setSplashStatus('Starting services…')
+  createMainWindow()
+
+  let appUrl
+  try {
+    if (isDev) {
+      appUrl = devUrl
+    } else {
+      appUrl = await startDesktopServer()
+    }
+  } catch (error) {
+    setSplashError(error.message || 'Startup failed. Please restart MANJI Studio.')
     return
   }
 
-  const appUrl = await startDesktopServer()
-  await window.loadURL(appUrl)
+  // 3. Load the app behind the splash. ready-to-show triggers the transition.
+  //    Auth, config, backend checks and assets all initialize inside the
+  //    renderer as usual — the splash never blocks them.
+  setSplashStatus('Loading MANJI…')
+  try {
+    await mainWindow.loadURL(appUrl)
+  } catch (error) {
+    if (!transitioned) {
+      setSplashError('Could not load MANJI. Check your connection and restart the app.')
+    }
+    return
+  }
+
+  // 4. Failsafe: if the renderer never signals ready, say so instead of
+  //    leaving the user on a silent splash.
+  setTimeout(() => {
+    if (!transitioned && mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.webContents.isLoading()) {
+        setSplashStatus('Still loading — almost there…')
+      } else {
+        transitionToMain()
+      }
+    }
+  }, 30000)
 }
 
 app.whenReady().then(async () => {
-  await createWindow()
+  // Splash FIRST — synchronously the first window created on launch.
+  createSplashWindow()
+  await initialize()
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) {
+      transitioned = false
+      createSplashWindow()
+      initialize()
+    }
   })
 })
 
