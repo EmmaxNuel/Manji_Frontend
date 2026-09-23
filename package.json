@@ -100,7 +100,6 @@
       "publisherDisplayName": "MANJI",
       "applicationId": "ManjiStudio",
       "displayName": "MANJI Studio",
-      "description": "AI-powered creative studio for stories, comics, manga, and animation.",
       "backgroundColor": "#0a0a0a",
       "artifactName": "MANJI-${version}.${ext}",
       "addAutoLaunchExtension": false
