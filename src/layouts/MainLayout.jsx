@@ -7,7 +7,7 @@
  */
 
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { BookOpen, Compass, FolderOpen, Library, PenSquare, Sun, Moon, LogOut, User, ChevronDown, HelpCircle, Sparkles } from 'lucide-react'
+import { BookOpen, Compass, FolderOpen, Library, PenSquare, Sun, Moon, LogOut, User, ChevronDown, HelpCircle, Sparkles, Menu, X, ArrowLeft } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
@@ -137,7 +137,14 @@ export default function MainLayout({ children }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const dropdownRef = useRef(null)
+
+  // "Where I came from" — browser history back, hidden on home/first entry
+  const canGoBack = location.pathname !== '/' && location.key !== 'default'
+  function goBack() {
+    navigate(-1)
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -148,6 +155,22 @@ export default function MainLayout({ children }) {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Close sidebar on navigation + Escape key
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    function handleKey(event) {
+      if (event.key === 'Escape') {
+        setSidebarOpen(false)
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
   }, [])
 
   async function handleLogout() {
@@ -216,10 +239,34 @@ export default function MainLayout({ children }) {
       <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[var(--color-bg)]/80 border-b border-[var(--color-border)]">
         <div className="page-container">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <Logo size="md" />
-            </Link>
+            {/* Left: hamburger + back + logo */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={themeBtnStyle}
+                onMouseEnter={handleThemeMouseEnter}
+                onMouseLeave={handleThemeMouseLeave}
+                aria-label="Open menu"
+                title="Menu"
+              >
+                <Menu size={20} />
+              </button>
+              {canGoBack && (
+                <button
+                  onClick={goBack}
+                  style={themeBtnStyle}
+                  onMouseEnter={handleThemeMouseEnter}
+                  onMouseLeave={handleThemeMouseLeave}
+                  aria-label="Go back"
+                  title="Go back"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+              )}
+              <Link to="/" className="flex items-center gap-3 group ml-1">
+                <Logo size="md" />
+              </Link>
+            </div>
 
             {/* Center Navigation */}
             <div className="flex items-center gap-2">
@@ -318,10 +365,140 @@ export default function MainLayout({ children }) {
         </div>
       </nav>
 
+      {/* Mobile Top Bar (hamburger + back + logo + account) */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-[var(--color-bg)]/90 border-b border-[var(--color-border)]">
+        <div className="flex items-center justify-between h-14 px-3">
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-lg text-[var(--color-text-secondary)]"
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
+            </button>
+            {canGoBack && (
+              <button
+                onClick={goBack}
+                className="p-2 rounded-lg text-[var(--color-text-secondary)]"
+                aria-label="Go back"
+              >
+                <ArrowLeft size={22} />
+              </button>
+            )}
+            <Link to="/" className="flex items-center ml-1">
+              <Logo size="sm" />
+            </Link>
+          </div>
+          {user ? (
+            <Link to={`/profile/${user.username}`} aria-label="My profile">
+              <Avatar src={user.profile?.avatar} username={user.username} size="sm" />
+            </Link>
+          ) : (
+            <Link to="/login" className="btn-primary text-xs px-4 py-2">
+              Sign In
+            </Link>
+          )}
+        </div>
+      </div>
+
       {/* Main content */}
-      <main className="md:pt-16">
+      <main className="pt-14 pb-28 md:pt-16 md:pb-0">
         {children}
       </main>
+
+      {/* Sidebar drawer (hamburger) — shared desktop + mobile */}
+      {sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[70] bg-black/60"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+          <aside className="fixed top-0 left-0 bottom-0 z-[71] w-72 max-w-[85vw] bg-[var(--color-card)] border-r border-[var(--color-border)] flex flex-col">
+            <div className="flex items-center justify-between px-4 h-16 border-b border-[var(--color-border)]">
+              <Link to="/" onClick={() => setSidebarOpen(false)}>
+                <Logo size="md" />
+              </Link>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+                aria-label="Close menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+              {canGoBack && (
+                <button
+                  onClick={() => { setSidebarOpen(false); goBack() }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-white/5"
+                >
+                  <ArrowLeft size={18} />
+                  <span>Back</span>
+                </button>
+              )}
+              {navLinks.map(({ to, label, Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'text-orange-500 bg-orange-500/10'
+                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-white/5'
+                    }`
+                  }
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </NavLink>
+              ))}
+            </nav>
+            <div className="p-3 border-t border-[var(--color-border)]">
+              {user ? (
+                <div className="space-y-2">
+                  <Link
+                    to={`/profile/${user.username}`}
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5"
+                  >
+                    <Avatar src={user.profile?.avatar} username={user.username} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">{user.username}</div>
+                      <div className="text-xs text-[var(--color-text-muted)]">View Profile</div>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => { setSidebarOpen(false); handleLogout() }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10"
+                  >
+                    <LogOut size={18} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setSidebarOpen(false)}
+                    className="btn-ghost text-sm px-4 py-2.5 justify-center"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setSidebarOpen(false)}
+                    className="btn-primary text-sm px-4 py-2.5 justify-center"
+                  >
+                    Join Now
+                  </Link>
+                </div>
+              )}
+            </div>
+          </aside>
+        </>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-[var(--color-bg)]/90 border-t border-[var(--color-border)]">
