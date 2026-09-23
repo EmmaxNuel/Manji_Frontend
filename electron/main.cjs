@@ -20,6 +20,10 @@ const mimeTypes = {
 let splashWindow = null
 let mainWindow = null
 let transitioned = false
+// Minimum brand moment: long enough to read the logo + tagline,
+// short enough to stay inside the 1-3s startup budget.
+const MIN_SPLASH_MS = 1200
+let splashShownAt = 0
 
 function sendFile(response, filePath) {
   fs.readFile(filePath, (error, data) => {
@@ -97,6 +101,14 @@ function setSplashError(text) {
 
 function transitionToMain() {
   if (transitioned) return
+  // Let the splash breathe: if the app was ready faster than the
+  // minimum brand moment, wait out the remainder (errors bypass this).
+  const elapsed = splashShownAt > 0 ? Date.now() - splashShownAt : MIN_SPLASH_MS
+  const remaining = MIN_SPLASH_MS - elapsed
+  if (remaining > 0) {
+    setTimeout(transitionToMain, remaining)
+    return
+  }
   transitioned = true
   try {
     if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
@@ -134,7 +146,10 @@ function createSplashWindow() {
   })
   splashWindow.loadFile(path.join(__dirname, 'splash.html'))
   splashWindow.once('ready-to-show', () => {
-    if (splashWindow && !splashWindow.isDestroyed()) splashWindow.show()
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.show()
+      splashShownAt = Date.now()
+    }
   })
   splashWindow.on('closed', () => {
     splashWindow = null
